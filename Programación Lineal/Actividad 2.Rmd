@@ -1,0 +1,31 @@
+---
+title: "Tema 3 - Ejercicio 2"
+author: "David de los Santos Boix"
+date: "24 de marzo de 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Tema 3 - Ejercicio 2
+```{r}
+# Problema 2 con lp
+library(lpSolve)
+coef.z = c(20, 30, 50)
+mat_A.menorigual = matrix(c(0.8*10, 05*10, 0.2*10, 0.1*10, 0.3*10, 0.5*10, 0.1*10, 0.2*10, 0.3*10),3,3,byrow=T)
+coef.b = c(150, 100, 50)
+dir.rest = c("<=","<=","<=")
+
+#Resolución con LP
+sol.lp = lp("max",coef.z,mat_A.menorigual,dir.rest,coef.b)
+sol.lp
+sol.lp$solution
+
+#Resolución con LP Entera
+sol.lp = lp("max",coef.z,mat_A.menorigual,dir.rest,coef.b, all.int=T)
+sol.lp
+sol.lp$solution
+
+```

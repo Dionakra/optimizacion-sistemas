@@ -1,0 +1,183 @@
+---
+title: "Actividad 2"
+author: "David de los Santos Boix"
+date: "17 de marzo de 2017"
+output: html_document
+---
+```{r setup, include=FALSE}
+source("os_functions.r")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Tema 2
+#### Ejercicio 1
+Implemente en R el algoritmo de Newton de búsqueda unidimensional para funciones dos veces diferenciables. Utilícelo con varios funciones ejemplo y muestre gráficamente como evoluciona.
+```{r}
+#' Devuelve el mínimo de más cercano a un punto dado en una función dada
+#'
+#' Se utiliza el algoritmo de Newton para obtener estos datos. Más información aquí:
+#'  https://es.wikipedia.org/wiki/M%C3%A9todo_de_Newton
+#' @param funx Expresión analítica de la ecuación que queremos minimizar, dependiente de X
+#' @param lambda Punto inicial de la búsqueda del mínimo
+#' @param eps Máxima incertidumbre aceptada como condición de parada
+#' @param detail Indica si se desea ver el detalle de la ejecución o no
+#' @author David de los Santos Boix
+#' @return El detalle de la ejecución del algoritmo como data.frame
+#' @export
+newton.raphson <- function(funx, lambda, eps = 0.01, detail=F){
+  n = 0
+  p = lambda
+  mres = NULL
+  last.first = Inf
+  diff.first = D(funx,"x")
+  diff.second = D(diff.first, "x")
+  
+  eval.src = function(x) eval(funx)
+  eval.first = function(x) eval(diff.first)
+  eval.second = function(x) eval(diff.second)
+  names = c("n", "point", "f", "diff", "diff2")
+  
+  if (diff.first == 0 || diff.second == 0){
+    stop("The given function can't be derived twice, so, we can't use Newton-Raphson method on this one, sorry :(")
+  }
+  
+  repeat{
+    val.src = eval.src(p)
+    val.first = eval.first(p)
+    val.second = eval.second(p)
+    vres = c(n, p, val.src, val.first, val.second)
+
+    if (is.null(mres)) 
+      mres = vres
+     else 
+      mres = rbind(mres,vres)
+
+    if(abs(val.first - last.first) < eps | val.first<eps)
+      break
+
+    last.first = val.first
+    n = n+1
+    p = p - (val.first/val.second)
+  }
+  
+  colnames(mres) = names
+  rownames(mres) = NULL
+  dfres = as.data.frame(mres)
+
+  x = dfres$point
+  y = dfres$f
+  
+  curve(eval.src,min(x),max(x))
+  lines(x, y,type="b",col="red")
+  text(x, y,labels=1:length(x),pos=3,cex=0.6)
+
+  if (!detail) {
+    names(vres) = names
+    dfres = as.data.frame(vres)
+  }
+  
+  return(dfres)
+}
+
+f1 = expression(x^4-14*x^3+60*x^2-70*x)
+ex1 = newton.raphson(f1, 50, eps=0.001, detail=T)
+knitr::kable(ex1,digits = 6)
+```
+
+
+
+
+#### Ejercicio 5
+Encontrar la solución de los siguientes problemas, aplicando todos los algoritmos conocidos. Tomar l = 0.1
+
+##### Apartado 1
+```{r}
+funx = function(x) (x-2)^2 + (x-6)^2
+left = -5
+right = 5
+l = 0.1
+
+# Búsqueda dicotómica
+df.res = opt_dicotomica(funx,left,right, uncert=l)
+knitr::kable(df.res,digits = 4)
+
+# Búsqueda GoldenRatio
+df.res = opt_goldenratio(funx,left,right, uncert=l)
+knitr::kable(df.res,digits = 4)
+
+# Búsqueda Bisección
+df.res = opt_biseccion(funx,left,right, uncert=l)
+knitr::kable(df.res,digits = 4)
+
+```
+              
+##### Apartado 2
+```{r}
+funx = function(x) (x^4 - 3*(x^3) + 2*(x^2) + 3*x)
+left = -5
+right = 5
+l = 0.1
+
+# Búsqueda dicotómica
+df.res = opt_dicotomica(funx,left,right,uncert=l)
+knitr::kable(df.res,digits = 4)
+
+# Búsqueda GoldenRatio
+df.res = opt_goldenratio(funx,left,right,uncert=l)
+knitr::kable(df.res,digits = 4)
+
+source("os_functions.r")
+# Búsqueda Bisección
+df.res = opt_biseccion(funx,left,right,uncert=l)
+knitr::kable(df.res,digits = 4)
+
+```
+
+#### Ejercicio 6
+Resolver el problema a partir de la semilla (1,1)
+
+```{r}
+vx.ini = c(1,1)
+funx = function(vx) ((1/(1+vx[1]^2)) - vx[2]^2)
+df.res = opt_ciclicas(funx,vx.ini,eps=0.0001)
+knitr::kable(df.res[c(1:6,nrow(df.res)),],digits = 4)
+```
+
+
+
+#### Ejercicio 7
+Resolver el siguiente problema usando el método de Newton        
+Min f(x) = (3x1 − 1)3 + 4x1x2 + x2^2              
+comenzando desde el punto inicial x0 = (1, 2).
+```{r}
+# Usando el Algoritmo de Andrés Doncel Ramírez entregado en clase el 17/03/2017
+vx.ini = c(1,2)
+funx =expression((3*x-1)^3+(4*x*y)+y^2)
+df.res = optmul_nores_newton(funx,vx.ini)
+knitr::kable(df.res,digits = 6)
+```
+
+
+#### Ejercicio 8
+Resolver el problema comenzando en el punto (0,0)            
+Min   f(x) = x^2  + y^2    
+      x + y -1 = 0
+```{r}
+vx.ini = c(0,1)
+funx = function(vx) (vx[1]^2 + vx[2]^2)
+lrest.igualdad = list(function(vx) (vx[1]+vx[2]-1) )
+df.res = opt_penalizaciones(vx.ini,funx,lrest.igualdad,eps=0.0001)
+knitr::kable(df.res[c(1:5,nrow(df.res)),],digits = 5)
+```
+
+#### Ejercicio 9
+Sea el problema de programación no lineal:         
+Max 4*x + 6*y -2*x^2-2*x*y-2*y^2             
+Resolver el problema partiendo del punto inicial X_0 = (1,1)
+```{r}
+vx.ini = c(1,1)
+funx = function(vx) (4*vx[1] + 6*vx[2] -2*vx[1]^2-2*vx[1]*vx[2]-2*vx[2]^2)
+gradfunx = function(vx) c(4-4*vx[1]-2*vx[2],6-2*vx[1]-4*vx[2])
+df.res = opt_descendentes(funx,gradfunx,vx.ini,eps=0.0001, max.iter=15)
+knitr::kable(df.res,digits = 3)
+```
