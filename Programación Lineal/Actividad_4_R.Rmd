@@ -1,0 +1,110 @@
+---
+title: "Actividad 4 - Programación Lineal Entera en R"
+author: "David de los Santos Boix"
+date: "21 de abril de 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Ejercicio 8
+##### Se considera la familia F formada por cada cuadrado contenido en el primer cuadrante que contiene a los puntos $(1,2)$ y $(2,3)$, tiene los lados paralelos a los ejes coordenados y su esquina superior derecha pertenece a la recta $y=2x-4$. Hallar el cuadrado de F que tiene mínimo perímetro.
+
+Para ello definimos las siguientes variables:  
+1. $x_i, y_i$ son las coordenadas de los puntos del cuadrado en el primer cuadrante.  
+2. Con las 8 primeras restricciones establecemos que sean paralelos a los ejes coordenados.  
+3. Con la siguiente restricción hacemos que el punto 4, el superior derecha, pase por la recta indicada.  
+4. Con las 4 siguientes restricciones forzamos a que los puntos estén dentro del cuadrado.  
+5. Por último definimos que esté en el primer cuadrante.  
+$$
+\begin{array}{c}
+Min\  (x_2 - x_1) + (y_4 - y_2) + (x_4 - x_3) + (y_3 - y_1) \\
+\end{array}]
+$$
+
+$$
+\begin{array}{rl}
+y_1 - y_2 & = 0 \\
+y_3 - y_4 & = 0 \\
+y_3 - y_1 & \geq 0 \\
+y_4 - y_2 & \geq 0 \\
+x_1 - x_3 & = 0 \\
+x_2 - x_4 & = 0 \\
+x_1 - x_1 & \geq 0 \\
+x_4 - x_3 & \geq 0 \\
+2x_4 - y_4 & = 4 \\
+x_1 & \leq 1 \\
+y_1 & \leq 2 \\
+x_4 & \geq 2 \\
+y_4 & \geq 3 \\
+x_i, y_i & i=1, 2, 3, 4 \\
+x_i, y_i & \geq 0 \\
+\end{array}]
+$$
+
+```{r}
+library(lpSolve)
+coef.z = c(-1, 1,-1, 1, -1, -1, 1, 1)
+matA_igual = matrix(c(0, 0, 0, 0, 1, -1, 0, 0,
+                      0, 0, 0, 0, 0, 0, 1, -1, 
+                      1, 0, -1, 0, 0, 0, 0, 0, 
+                      0, 1, 0, -1, 0, 0, 0, 0,
+                      0, 0, 0, 2, 0, 0, 0, -1), 5, 8, byrow=T)
+
+matA_mayor = matrix(c(0, 0, 0, 0, -1, 0, 1, 0,
+                      0, 0, 0, 0, 0, -1, 0, 1, 
+                      -1, 1, 0, 0, 0, 0, 0, 0, 
+                      0, 0, -1, 1, 0, 0, 0, 0), 4, 8, byrow=T)
+
+matA_menorigual = matrix(c(1, 0, 0, 0, 0, 0, 0, 0,
+                           0, 0, 0, 0, 1, 0, 0, 0), 2, 8, byrow=T)
+
+matA_mayorigual = matrix(c(0, 0, 0, 1, 0, 0, 0, 0,
+                           0, 0, 0, 0, 0, 0, 0, 1), 2, 8, byrow=T)
+
+
+matA = rbind(matA_igual, matA_mayor, matA_menorigual, matA_mayorigual)
+
+dir.rest=c(rep("=", 5), rep(">", 4), rep("<=", 2), rep(">=", 2))
+coef.b = c(0, 0, 0, 0, 4, 0, 0, 0, 0, 1, 2, 2, 3)
+sol.lp = lp("min", coef.z, matA, dir.rest, coef.b)
+sol.lp
+sol.lp$solution
+
+```
+
+
+# Ejercicio 12
+##### Un tribunal de Selectividad está planificando la valoración que se hará de las tres partes que consta el examen: Lengua, Ciencias e Idiomas. Quieren dar valoraciones sobre 10, de forma que la de Ciencias sea mayor o igual a la de Lengua más la de Idiomas. Admás ninguna de las valoraciones puede ser inferior a 2. Formular el problema de determinar aquella planificación factible que conceda una mayor valoración a la parte de Idiomas.
+$$
+\begin{array}{c}
+Max\  i
+\end{array}]
+$$
+
+$$
+\begin{array}{rl}
+l + c + i & = 10 \\
+c - (l+1) & = 0 \\
+l, c, i & lengua, ciencias, idiomas \\
+l, c, i  & \geq 2 \\
+\end{array}]
+$$
+```{r}
+library(lpSolve)
+coef.z = c(0, 0, 1)
+
+matA = matrix(c(1, 1, 1, 
+                -1, 1, -1, 
+                1, 0, 0,
+                0, 1, 0, 
+                0, 0, 1), 5, 3, byrow=T)
+dir.rest=c("=", rep(">=", 4))
+coef.b = c(10, 0, rep(2, 3))
+sol.lp = lp("max", coef.z, matA, dir.rest, coef.b)
+sol.lp
+sol.lp$solution
+
+```

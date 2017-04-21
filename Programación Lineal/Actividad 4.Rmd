@@ -1,0 +1,127 @@
+---
+title: "Tema 3 - Programación Lineal"
+author: "David de los Santos Boix"
+date: "31 de marzo de 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Ejercicio 4
+```{r}
+# Variables de decisión
+#   X_ij = nº de toneladas en la fábrica i-ésima del acero j-ésimo
+#   i=1, 2, 3; j=1, 2
+# Tipo de problema: Minimizar
+# Costes (Función objetivo):
+#   10*x_11 +12*x_21 + 14*x_31 + 11*x_12 + 9*x_22+10*x_32
+# Restricciones (Consumo de tiempo):
+#   20*x_11 + 22*x_12 <= 200
+#   24*x_21 + 18*x_22 <= 200
+#   28*x_31 + 30*x_32 <= 200
+#   x_12+x_21+x_31 >= 500
+#   x_12 + x_22 + x_32 >= 600
+#   x_ij >= 0
+
+library(lpSolve)
+coef.z = c(10, 12, 14, 11, 9, 10)
+matA_menorigual = matrix(c(20, 0, 0, 22, 0, 0,
+                           0, 24, 0, 0, 18, 0,
+                           0, 0, 28, 0, 0, 30), 3, 6, byrow=T)
+matA_mayorigual = matrix(c(1, 1, 1, 0, 0, 0,
+                           0, 0, 0, 1, 1, 1), 2, 6, byrow=T)
+
+
+matA = rbind(matA_menorigual, matA_mayorigual)
+
+dir.rest=c(rep("<=", 3), rep(">=", 2))
+coef.b = c(200, 200, 200, 500, 600)
+sol.lp = lp("min", coef.z, matA, dir.rest, coef.b)
+#sol.lp = lp("min", coef.z, matA, dir.rest, coef.b, compute.sens=T)
+sol.lp
+sol.lp$solution
+
+```
+
+
+### Ejercicio 5
+```{r}
+# Variables de decisión
+#   x_1 = nº de botellas del vino A
+#   x_2 = nº de botellas del vino B
+#   y_1 = nº de unidades monetarias vino A
+#   y_2 = nº de unidades monetarias vino B
+#
+# Formulación: Ganancias = Beneficios - Costos
+#
+# Tipo de problema: Maximizar
+#
+# Costes (Función objetivo):
+#   (125-80)*x_1 + (105-70)*x_2 - 100*y_1 - 100*y_2
+#
+# Restricciones:
+#   x_1 - 5*y_1 <= 0
+#   x_2 - 8*y_2 <=0
+#   -0.6*x_1 + 0.4*x_2 <=0
+#   0.3*x_1-0.7*x_2 <=0
+#   80*x_1 + 70*x_2 + 100*y_1 + 100*y_2 <= 1000000
+#   x_1, x_2, y_1, y_2 >=0
+#   x_1, x_2 enteras
+
+library(lpSolve)
+coef.z = c(45, 35, -100, -100)
+matA_menorigual = matrix(c(1, 0, -5, 0, 
+                           0,  1, 0, -8, 
+                           -0.6, 0.4, 0, 0, 
+                           0.3, -0.7, 0, 0,
+                           80, 70, 100, 100), 5, 4, byrow=T)
+
+matA = matA_menorigual
+
+dir.rest=c(rep("<=", 5))
+coef.b = c(rep(0, 4), 1000000)
+sol.lp = lp("max", coef.z, matA, dir.rest, coef.b, int.vec=c(1, 2))
+#sol.lp = lp("min", coef.z, matA, dir.rest, coef.b, compute.sens=T)
+sol.lp
+sol.lp$solution
+
+```
+
+### Ejercicio 7
+```{r}
+# Variables de decisión
+# -x_1 + 2*x_2 -3*x_3<=1
+#   x_i = "nº de $ que apuesto en la opción i-esima" i=1, 2, 3, 3
+#   y_i; i=1, 2
+# Tipo de problema: Maximizar
+#
+# Costes (Función objetivo):
+#   y
+#
+# Restricciones:
+#  -x_1 + 2*x_2 -3*x_3<=1
+# 
+#   3*x_1 - 9+x_2 + 10*x_3 -  8*x_4 - y >= 0
+#   x_1 + x_2 + x_3 + x_4 <= 500
+#   x_i >= 0, y Real
+#   y = y_1 - y_2; y_i>=0
+
+
+library(lpSolve)
+coef.z = c(0, 0, 0)
+matA = matrix(c(-1, 2, -2, 
+                -1, 1, -1, 
+                0, -1, 1, 
+                1, 1, -1,
+                2, -1, 2), 5, 3, byrow=T)
+dir.rest=c(rep("<=", 3), ">=", ">=")
+coef.b = c(1, 1, -1, 0.0001-1, 0.0001-2)
+#sol.lp = lp("max", coef.z, matA, dir.rest, coef.b, int.vec=c(1, 2))
+sol.lp = lp("min", coef.z, matA, dir.rest, coef.b, compute.sens=T)
+sol.lp
+sol.lp$solution
+
+```
+ 
