@@ -28,12 +28,12 @@ $$
 \begin{array}{rl}
 y_1 - y_2 & = 0 \\
 y_3 - y_4 & = 0 \\
-y_3 - y_1 & \geq 0 \\
-y_4 - y_2 & \geq 0 \\
+y_3 - y_1 & > 0 \\
+y_4 - y_2 & > 0 \\
 x_1 - x_3 & = 0 \\
 x_2 - x_4 & = 0 \\
-x_1 - x_1 & \geq 0 \\
-x_4 - x_3 & \geq 0 \\
+x_2 - x_1 & > 0 \\
+x_4 - x_3 & > 0 \\
 2x_4 - y_4 & = 4 \\
 x_1 & \leq 1 \\
 y_1 & \leq 2 \\
@@ -87,7 +87,7 @@ $$
 $$
 \begin{array}{rl}
 l + c + i & = 10 \\
-c - (l+1) & = 0 \\
+c - (l+i) & \geq 0 \\
 l, c, i & lengua, ciencias, idiomas \\
 l, c, i  & \geq 2 \\
 \end{array}]
