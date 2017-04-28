@@ -1,0 +1,82 @@
+---
+title: "Actividad 5 - Programación Lineal Entera en GLPK"
+author: "David de los Santos Boix"
+date: "28 de abril de 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Ejercicio 8
+##### Se considera la familia F formada por cada cuadrado contenido en el primer cuadrante que contiene a los puntos $(1,2)$ y $(2,3)$, tiene los lados paralelos a los ejes coordenados y su esquina superior derecha pertenece a la recta $y=2x-4$. Hallar el cuadrado de F que tiene mínimo perímetro.
+
+Para ello definimos las siguientes variables:  
+1. $x_i, y_i$ son las coordenadas de los puntos del cuadrado en el primer cuadrante.  
+2. Con las 8 primeras restricciones establecemos que sean paralelos a los ejes coordenados.  
+3. Con la siguiente restricción hacemos que el punto 4, el superior derecha, pase por la recta indicada.  
+4. Con las 4 siguientes restricciones forzamos a que los puntos estén dentro del cuadrado.  
+5. Por último definimos que esté en el primer cuadrante.  
+$$
+\begin{array}{c}
+Min\  (x_2 - x_1) + (y_4 - y_2) + (x_4 - x_3) + (y_3 - y_1) \\
+\end{array}]
+$$
+
+$$
+\begin{array}{rl}
+y_1 - y_2 & = 0 \\
+y_3 - y_4 & = 0 \\
+y_3 - y_1 & > 0 \\
+y_4 - y_2 & > 0 \\
+x_1 - x_3 & = 0 \\
+x_2 - x_4 & = 0 \\
+x_2 - x_1 & > 0 \\
+x_4 - x_3 & > 0 \\
+2x_4 - y_4 & = 4 \\
+x_1 & \leq 1 \\
+y_1 & \leq 2 \\
+x_4 & \geq 2 \\
+y_4 & \geq 3 \\
+x_i, y_i & i=1, 2, 3, 4 \\
+x_i, y_i & \geq 0 \\
+\end{array}]
+$$
+
+```{r}
+library(Rglpk)
+x8 <- Rglpk_read_file(file = "ejercicio8.mod",type = "MathProg",verbose = F)
+
+sol.x8 = Rglpk_solve_LP(x8$objective, x8$constraints[[1]], x8$constraints[[2]], x8$constraints[[3]], x8$bounds, x8$types, x8$maximum)
+sol.x8$optimum
+sol.x8$solution
+
+```
+\textit{He tenido que cambiar de ">" a ">=" dado que al cargar el fichero con esa desigualdad estricta el paquete no lo reconoce. Eso no puede ser debido a que el punto no puede ser sí mismo, no sería un cuadrado, sería un punto. De todas formas el problema resuelve de forma idéntica al anterior.}
+
+# Ejercicio 12
+##### Un tribunal de Selectividad está planificando la valoración que se hará de las tres partes que consta el examen: Lengua, Ciencias e Idiomas. Quieren dar valoraciones sobre 10, de forma que la de Ciencias sea mayor o igual a la de Lengua más la de Idiomas. Admás ninguna de las valoraciones puede ser inferior a 2. Formular el problema de determinar aquella planificación factible que conceda una mayor valoración a la parte de Idiomas.
+$$
+\begin{array}{c}
+Max\  i
+\end{array}]
+$$
+
+$$
+\begin{array}{rl}
+l + c + i & = 10 \\
+c - (l+i) & \geq 0 \\
+l, c, i & lengua, ciencias, idiomas \\
+l, c, i  & \geq 2 \\
+\end{array}]
+$$
+```{r}
+library(Rglpk)
+x12 <- Rglpk_read_file(file = "ejercicio12.mod",type = "MathProg",verbose = F)
+
+sol.x12 = Rglpk_solve_LP(x12$objective, x12$constraints[[1]], x12$constraints[[2]], x12$constraints[[3]], x12$bounds, x12$types, x12$maximum)
+sol.x12$optimum
+sol.x12$solution
+
+```
