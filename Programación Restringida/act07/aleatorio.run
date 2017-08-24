@@ -1,0 +1,22 @@
+
+reset;
+#option solver cplex;
+option solver "./cplex";
+model aleatorio.mod;
+let nvar := 20;
+solve;
+display x,z > sal02.txt;
+
+for {ii in 20..30} {
+   let nvar := ii;
+   printf "Problema con ii igual a %d \n",ii;
+   printf "Problema con ii igual a %d \n",ii >> sal02.txt;
+   solve;
+   display x,z >> sal02.txt;
+   expand >> sal02.txt;
+}
+fix x[3] := 5;  # fija la variable sin eliminarla
+drop rest[15];
+solve;
+display x,z >> sal02.txt;
+expand >> sal02.txt;

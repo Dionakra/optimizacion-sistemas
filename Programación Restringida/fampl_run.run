@@ -1,0 +1,8 @@
+
+reset;
+model sudoku.mod;
+data sudoku.dat;
+option solver gecode;
+solve;
+display given;
+display X;

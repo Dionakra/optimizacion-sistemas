@@ -1,0 +1,20 @@
+
+reset;
+model ejercicio_4_11.mod;
+data ejercicio_4_11.dat;
+option solver "./cplex";
+solve;
+display Quien,z;
+
+printf "\nQuien:\n";
+for{i in TAREAS} {
+  printf "Tarea %2d: ", i;
+  for {j in TRABAJADORES} {
+    if Quien[i,j]>=1 then
+       printf "Trabajador %2d, con coste: %2d\n", j,coste[j]; 
+  }
+  
+}
+
+printf "\n";
+

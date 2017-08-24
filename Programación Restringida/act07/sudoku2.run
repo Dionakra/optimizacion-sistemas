@@ -1,0 +1,14 @@
+
+reset;
+#option solver gecode;
+option solver "./gecode";
+model sudoku2.mod;
+data sudoku2.dat;
+solve;
+display given;
+table givenOut OUT: [FILAS,COLS], given;
+write table givenOut;
+display X;
+table SudokuOut OUT: [FILAS,COLS], X;
+write table SudokuOut;
+

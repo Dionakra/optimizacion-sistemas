@@ -1,0 +1,105 @@
+---
+title: "Optimización de Sistemas - Programación Restringida"
+author: "David de los Santos Boix"
+date: "21 de mayo de 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Resolución de Sudokus
+Como ejemplo de resolución de problemas utilizando tácticas de programación restringida, vamos a resolver un ejemplo de Sudoku. Para ello realizaremos la programación en AMPL utilizando el paquete de solver gecode. Para ejecutar la programación de AMPL utilizaremos la salida de la consola, llamando al sistema y utilizando los ficheros ejecutables propios de AMPL. Para ello debemos definir una serie de métodos para poder ejecutar en sistema y obtener la salida del mismo, lo cual se ejecutará a continuación.
+```{r}
+# Definimos el directorio donde se encuentran los ejecutables de AMPL
+ampl.dir = "c:/optsis/"
+
+execute <- function(programme, subject.spec = "", intern = FALSE, wait = FALSE) {
+  if (!identical(subject.spec, "")) {
+    subject.spec <- paste0(" ", subject.spec)
+  } 
+  system(paste0("cmd.exe /c ", programme, subject.spec), intern = intern, wait = wait)
+}
+```
+
+
+
+```{r}
+command <- function(comando, intern = TRUE, wait = FALSE) {
+  system(paste("cmd.exe /c", comando), intern = T, wait = wait)
+}
+```
+
+
+```{r}
+func_ampl_moddatrun = function(v_mod, v_dat, v_run, fic.mod = "fampl_modelo.mod", fic.dat = "fampl_datos.dat", fic.run = "fampl_run.run", ampl.install.dir = ampl.dir, ampl.install.exe = "ampl.exe", dir.actual = getwd()) {
+  cat(v_mod, file = fic.mod)
+  cat(v_dat, file = fic.dat)
+  cat(v_run, file = fic.run)
+
+  tmp1 = file.copy(fic.mod, ampl.install.dir, overwrite = T)
+  tmp1 = file.copy(fic.dat, ampl.install.dir, overwrite = T)
+  tmp1 = file.copy(fic.run, ampl.install.dir, overwrite = T)
+  comando = paste("cd ", ampl.install.dir, " && ", ampl.install.exe, fic.run, sep = " ")
+
+  cat(command(comando), sep = "\n")
+
+  tmp1 = file.remove(paste0(ampl.install.dir, fic.mod))
+  tmp1 = file.remove(paste0(ampl.install.dir, fic.dat))
+  tmp1 = file.remove(paste0(ampl.install.dir, fic.run))
+}
+
+```
+
+Una vez hemos definido las funciones que nos dan la posibilidad de ejecutar y leer las llamadas del sistema, cargamos los ficheros modelo, data y un previamente desarrollados en AMPL. En este caso, y para modificar lo realizado en clase, utilizaré un sudoku de la página http://www.extremesudoku.info/sudoku.html correspondiente al 21 de Mayo de 2017, en concreto el Sudoku con la etiqueta "Extreme", dado que según la página, es el más difícil, a ver qué tal se le da a AMPL.
+```{r}
+modelo = '
+param given {1..9, 1..9} integer, in 0..9;
+# given[i,j] > 0 is the value given for row i, col j
+# given[i,j] = 0 means no value given
+var X {1..9, 1..9} integer, in 1..9;
+# x[i,j] = the number assigned to the cell in row i, col j
+subj to AssignGiven {i in 1..9, j in 1..9: given[i,j] > 0}:
+X[i,j] = given[i,j];
+# assign given values
+subj to Rows {i in 1..9}:
+alldiff {j in 1..9} X[i,j];
+# cells in the same row must be assigned distinct numbers
+subj to Cols {j in 1..9}:
+alldiff {i in 1..9} X[i,j];
+# cells in the same column must be assigned distinct numbers
+subj to Regions {I in 1..9 by 3, J in 1..9 by 3}:
+alldiff {i in I..I+2, j in J..J+2} X[i,j];
+# cells in the same region must be assigned distinct numbers
+'
+
+
+data = '
+param given default 0:
+	1 2 3 4 5 6 7 8 9 :=
+	1 . . 4 7 . . . . 6
+	2 . 1 . . 5 . . 3 .
+	3 7 . . . . 1 2 . .
+	4 4 . . . . 2 6 . .
+	5 . 9 . . 3 . . 2 .
+	6 . . 2 4 . . . . 9
+	7 . . 3 5 . . . . 7
+	8 . 4 . . 9 . . 5 .
+	9 8 . . . . 4 9 . . ;
+' 
+
+
+run = '
+reset;
+model sudoku.mod;
+data sudoku.dat;
+option solver gecode;
+solve;
+display given;
+display X;
+'
+
+func_ampl_moddatrun(v_mod=modelo, v_dat=data, v_run = run, fic.mod = "ejampl.mod", fic.dat = "ejampl.dat")
+
+```

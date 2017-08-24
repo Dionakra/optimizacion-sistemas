@@ -80,3 +80,14 @@ sol.x12$optimum
 sol.x12$solution
 
 ```
+
+
+
+```{r}
+library(Rglpk)
+x8 <- Rglpk_read_file(file = "48.mod",type = "MathProg",verbose = F)
+
+sol.x8 = Rglpk_solve_LP(x8$objective, x8$constraints[[1]], x8$constraints[[2]], x8$constraints[[3]], x8$bounds, x8$types, x8$maximum)
+sol.x8$optimum
+sol.x8$solution
+```
